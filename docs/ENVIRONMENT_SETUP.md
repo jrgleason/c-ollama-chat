@@ -6,10 +6,10 @@ This document explains how to configure environment variables for the C-Ollama C
 
 The application requires the following Auth0 environment variables:
 
-- `AUTH0_DOMAIN` - Your Auth0 domain (e.g., `myapp.auth0.com`)
+- `AUTH0_DOMAIN` - Your Auth0 domain (e.g., `jackiergleason.auth0.com`)
 - `AUTH0_CLIENT_ID` - Your Auth0 application client ID
-- `AUTH0_CLIENT_SECRET` - Your Auth0 application client secret
-- `AUTH0_AUDIENCE` - Your Auth0 API identifier
+- `AUTH0_AUDIENCE` - Your Auth0 API identifier (e.g., `https://thejackiegleason.com`)
+- `AUTH0_SCOPE` - Space-separated list of scopes (e.g., `openid profile email add:documents site:admin`)
 
 ## Setup Methods
 
@@ -19,16 +19,16 @@ The application requires the following Auth0 environment variables:
 ```powershell
 $env:AUTH0_DOMAIN="your-domain.auth0.com"
 $env:AUTH0_CLIENT_ID="your-client-id"
-$env:AUTH0_CLIENT_SECRET="your-client-secret"
 $env:AUTH0_AUDIENCE="https://your-api-identifier"
+$env:AUTH0_SCOPE="openid profile email add:documents site:admin"
 ```
 
 #### Permanent (Persists Across Sessions)
 ```powershell
 [Environment]::SetEnvironmentVariable("AUTH0_DOMAIN", "your-domain.auth0.com", "User")
 [Environment]::SetEnvironmentVariable("AUTH0_CLIENT_ID", "your-client-id", "User")
-[Environment]::SetEnvironmentVariable("AUTH0_CLIENT_SECRET", "your-client-secret", "User")
 [Environment]::SetEnvironmentVariable("AUTH0_AUDIENCE", "https://your-api-identifier", "User")
+[Environment]::SetEnvironmentVariable("AUTH0_SCOPE", "openid profile email add:documents site:admin", "User")
 ```
 
 ### Method 2: .env File (Fallback)
@@ -42,8 +42,8 @@ $env:AUTH0_AUDIENCE="https://your-api-identifier"
    ```env
    AUTH0_DOMAIN=your-domain.auth0.com
    AUTH0_CLIENT_ID=your-client-id
-   AUTH0_CLIENT_SECRET=your-client-secret
    AUTH0_AUDIENCE=https://your-api-identifier
+   AUTH0_SCOPE=openid profile email add:documents site:admin
    ```
 
 3. Run with .env fallback:
@@ -57,8 +57,8 @@ $env:AUTH0_AUDIENCE="https://your-api-identifier"
 cd src
 dotnet user-secrets set "Auth0:Domain" "your-domain.auth0.com"
 dotnet user-secrets set "Auth0:ClientId" "your-client-id"
-dotnet user-secrets set "Auth0:ClientSecret" "your-client-secret"
 dotnet user-secrets set "Auth0:Audience" "https://your-api-identifier"
+dotnet user-secrets set "Auth0:Scope" "openid profile email add:documents site:admin"
 ```
 
 ## Running the Application
@@ -66,7 +66,7 @@ dotnet user-secrets set "Auth0:Audience" "https://your-api-identifier"
 After setting up your environment variables:
 
 ```powershell
-.\run-with-env.ps1
+.\start.ps1
 ```
 
 The script will:

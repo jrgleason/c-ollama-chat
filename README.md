@@ -33,22 +33,23 @@ A modern chat application with React frontend and .NET backend, featuring local 
    ```powershell
    $env:AUTH0_DOMAIN="your-domain.auth0.com"
    $env:AUTH0_CLIENT_ID="your-client-id"
-   $env:AUTH0_CLIENT_SECRET="your-client-secret"
    $env:AUTH0_AUDIENCE="https://thejackiegleason.com"
    $env:AUTH0_SCOPE="openid profile email add:documents site:admin"
    ```
 
 3. **Run the application**
    ```powershell
-   .\run-with-env.ps1
+   .\start.ps1
    ```
 
-4. **Open your browser** → http://localhost:5013
+4. **Open your browser** → http://localhost:8019
 
 ## 📚 Documentation
 
 - **[Auth0 Setup Guide](docs/AUTH0_SETUP.md)** - Complete Auth0 configuration
-- **[Environment Setup](docs/ENVIRONMENT_SETUP.md)** - Environment variables configuration  
+- **[Windows Environment Setup](docs/WINDOWS_ENV_SETUP.md)** - Windows environment variables setup
+- **[Environment Setup](docs/ENVIRONMENT_SETUP.md)** - Alternative environment configuration
+- **[Development Guide](docs/DEVELOPMENT.md)** - Development workflow and tips
 - **[Development Guide](docs/DEVELOPMENT.md)** - Development workflows and project structure
 
 ## 🛠️ Technology Stack
