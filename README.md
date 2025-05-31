@@ -5,6 +5,7 @@ Simple C# Chat app using Ollama to allow for local LLM integration with OAuth au
 
 - RESTful API built with ASP.NET Core
 - OAuth/JWT authentication and authorization
+- Auth0 integration support
 - Integration with Ollama for local LLM access
 - Role-based access control with admin privileges
 - Development tools for testing
@@ -46,4 +47,23 @@ GET /dev/token?userId=testuser&isAdmin=false
 
 ## Configuration
 
-OAuth and Ollama settings can be configured in `appsettings.json`:
+OAuth and Ollama settings can be configured in `appsettings.json`.
+
+### Auth0 Configuration
+
+The application supports Auth0 authentication. To use Auth0:
+
+1. Create an Auth0 account at [auth0.com](https://auth0.com)
+2. Create a new Auth0 application (Regular Web Application)
+3. Configure the callback URL to `https://your-domain/callback`
+4. Configure the logout URL to `https://your-domain/`
+5. Update the Auth0 settings in `appsettings.json`:
+```json
+"Auth0": {
+  "Domain": "your-tenant.auth0.com",
+  "ClientId": "your-client-id",
+  "ClientSecret": "your-client-secret",
+  "Audience": "your-api-audience"
+}
+```
+6. Uncomment the Auth0 authentication configuration in `Program.cs`

@@ -1,5 +1,7 @@
 using ChatApp.Config;
 using ChatApp.Services;
+using ChatApp.Auth0;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +10,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
-// Add authentication and authorization services
+// Add authentication options
+// Option 1: Use the original security configuration
 builder.Services.AddSecurityServices(builder.Configuration);
+
+// Option 2: Use Auth0 authentication (commented out by default)
+/*
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddAuth0WebAppAuthentication(options =>
+{
+    options.Domain = builder.Configuration["Auth0:Domain"] ?? "";
+    options.ClientId = builder.Configuration["Auth0:ClientId"] ?? "";
+    options.ClientSecret = builder.Configuration["Auth0:ClientSecret"] ?? "";
+});
+*/
 
 // Register HttpClient for Ollama API
 builder.Services.AddHttpClient<IOllamaService, OllamaService>();
