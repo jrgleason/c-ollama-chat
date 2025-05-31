@@ -144,7 +144,7 @@ The .NET backend provides:
 
 #### Update Auth0 Configuration
 1. Modify environment variables
-2. Restart application with `.\run-with-env.ps1`
+2. Restart application with `.\start.ps1`
 
 #### Add New Chat Models
 1. Update `ConfigController.GetAvailableModels()`

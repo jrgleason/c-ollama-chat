@@ -1,12 +1,53 @@
-using ChatApp.Config;
 using ChatApp.Services;
 using ChatApp.Auth0;
+using ChatApp.Config;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Expand environment variables in configuration
-EnvironmentVariableExpander.ExpandEnvironmentVariables(builder.Configuration);
+// Configure environment variable mapping for Auth0
+// ASP.NET Core will automatically map AUTH0_DOMAIN to Auth0:Domain, etc.
+builder.Configuration.AddEnvironmentVariables(prefix: "AUTH0_");
+
+// Alternative explicit mapping if needed
+var auth0Config = new List<KeyValuePair<string, string?>>();
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AUTH0_DOMAIN")))
+    auth0Config.Add(new("Auth0:Domain", Environment.GetEnvironmentVariable("AUTH0_DOMAIN")));
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AUTH0_CLIENT_ID")))
+    auth0Config.Add(new("Auth0:ClientId", Environment.GetEnvironmentVariable("AUTH0_CLIENT_ID")));
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AUTH0_AUDIENCE")))
+    auth0Config.Add(new("Auth0:Audience", Environment.GetEnvironmentVariable("AUTH0_AUDIENCE")));
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AUTH0_SCOPE")))
+    auth0Config.Add(new("Auth0:Scope", Environment.GetEnvironmentVariable("AUTH0_SCOPE")));
+
+if (auth0Config.Any())
+    builder.Configuration.AddInMemoryCollection(auth0Config);
+
+// Add debugging to show Auth0 configuration values
+Console.WriteLine("=== AUTH0 CONFIGURATION DEBUG ===");
+var auth0Vars = new[] { "AUTH0_DOMAIN", "AUTH0_CLIENT_ID", "AUTH0_AUDIENCE", "AUTH0_SCOPE" };
+foreach (var varName in auth0Vars)
+{
+    var envValue = Environment.GetEnvironmentVariable(varName);
+    
+    // Use the same key mapping as our manual configuration
+    var configKey = varName switch
+    {
+        "AUTH0_DOMAIN" => "Auth0:Domain",
+        "AUTH0_CLIENT_ID" => "Auth0:ClientId", 
+        "AUTH0_AUDIENCE" => "Auth0:Audience",
+        "AUTH0_SCOPE" => "Auth0:Scope",
+        _ => $"Auth0:{varName.Replace("AUTH0_", "")}"
+    };
+    
+    var configValue = builder.Configuration[configKey];
+    var displayEnv = string.IsNullOrEmpty(envValue) ? "(not set)" : 
+                     envValue.Length > 8 ? envValue.Substring(0, 8) + "..." : envValue;
+    var displayConfig = string.IsNullOrEmpty(configValue) ? "(not set)" : 
+                        configValue.Length > 8 ? configValue.Substring(0, 8) + "..." : configValue;
+    Console.WriteLine($"{varName}: ENV={displayEnv}, CONFIG={displayConfig}");
+}
+Console.WriteLine("=== END AUTH0 DEBUG ===");
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

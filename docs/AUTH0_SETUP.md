@@ -19,26 +19,30 @@ This guide will help you configure Auth0 authentication for the C-Ollama Chat ap
 
 ## Step 2: Configure Application Settings
 
-In your Auth0 application settings, configure the following:
+In your Auth0 application settings, configure the following URLs. The application automatically uses `window.location.origin` for redirects, so you need to add the URLs for each environment you'll run the app in:
 
 ### Allowed Callback URLs
 ```
-http://localhost:5013
+http://localhost:8019
+https://yourdomain.com
 ```
 
 ### Allowed Logout URLs
 ```
-http://localhost:5013
+http://localhost:8019
+https://yourdomain.com
 ```
 
 ### Allowed Web Origins
 ```
-http://localhost:5013
+http://localhost:8019
+https://yourdomain.com
 ```
 
 ### Allowed Origins (CORS)
 ```
-http://localhost:5013
+http://localhost:8019
+https://yourdomain.com
 ```
 
 ## Step 3: Configure Auth0 Credentials (Environment Variables)
@@ -51,7 +55,6 @@ Set these environment variables in PowerShell:
 ```powershell
 $env:AUTH0_DOMAIN="jackiergleason.auth0.com"
 $env:AUTH0_CLIENT_ID="your-client-id"  
-$env:AUTH0_CLIENT_SECRET="your-client-secret"
 $env:AUTH0_AUDIENCE="https://thejackiegleason.com"
 $env:AUTH0_SCOPE="openid profile email add:documents site:admin"
 ```
@@ -60,7 +63,6 @@ Or set them permanently in Windows:
 ```powershell
 [Environment]::SetEnvironmentVariable("AUTH0_DOMAIN", "jackiergleason.auth0.com", "User")
 [Environment]::SetEnvironmentVariable("AUTH0_CLIENT_ID", "your-client-id", "User")
-[Environment]::SetEnvironmentVariable("AUTH0_CLIENT_SECRET", "your-client-secret", "User")
 [Environment]::SetEnvironmentVariable("AUTH0_AUDIENCE", "https://thejackiegleason.com", "User")
 [Environment]::SetEnvironmentVariable("AUTH0_SCOPE", "openid profile email add:documents site:admin", "User")
 ```
@@ -120,7 +122,7 @@ dotnet user-secrets set "Auth0:Audience" "https://your-api-identifier"
 ## Step 5: Test the Integration
 
 1. Restart your application: `dotnet run` in the `src` folder
-2. Navigate to `http://localhost:5013`
+2. Navigate to `http://localhost:8019`
 3. Click the **Log In** button
 4. You should be redirected to Auth0's Universal Login
 5. After successful login, you should be redirected back to the application
@@ -131,13 +133,13 @@ dotnet user-secrets set "Auth0:Audience" "https://your-api-identifier"
 
 1. **Configuration Error Screen**: Check that your Auth0 domain and client ID are correctly set
 2. **Login Redirect Issues**: Verify that your callback URLs match exactly in Auth0 settings
-3. **CORS Errors**: Ensure `http://localhost:5013` is added to Allowed Origins in Auth0
+3. **CORS Errors**: Ensure `http://localhost:8019` is added to Allowed Origins in Auth0
 
 ### Checking Configuration:
 
 You can verify your Auth0 configuration is being loaded by visiting:
 ```
-http://localhost:5013/api/config/auth
+http://localhost:8019/api/config/auth
 ```
 
 This should return your Auth0 configuration (without sensitive data).
@@ -151,5 +153,5 @@ This should return your Auth0 configuration (without sensitive data).
 ## Production Deployment
 
 For production, update the URLs in Auth0 settings to match your production domain:
-- Replace `http://localhost:5013` with `https://yourdomain.com`
+- Replace `http://localhost:8019` with `https://yourdomain.com`
 - Update the `appsettings.json` accordingly
