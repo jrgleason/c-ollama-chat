@@ -53,3 +53,14 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 wwwroot
+
+# Environment variables and secrets
+.env
+.env.local
+.env.development
+.env.production
+appsettings.Development.json
+appsettings.Production.json
+
+# User secrets
+secrets.json
