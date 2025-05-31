@@ -64,3 +64,6 @@ appsettings.Production.json
 
 # User secrets
 secrets.json
+
+# Visual Studio temporary files
+.vs/
