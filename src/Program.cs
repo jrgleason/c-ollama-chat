@@ -45,8 +45,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Set up routing - this needs to be first
+app.UseRouting();
+
 // Use authentication and authorization middleware
 app.UseSecurityConfig();
+
+// Map controllers BEFORE static files (important!)
+// This ensures API routes are handled by controllers instead of static files
+app.MapControllers();
+
+// Enable static files for the entire application AFTER routes are mapped
+app.UseDefaultFiles(); // This will look for default files like index.html
+app.UseStaticFiles();  // This will serve static files from wwwroot
 
 var summaries = new[]
 {

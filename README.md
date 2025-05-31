@@ -1,5 +1,5 @@
-# c-ollama-chat
-Simple C# Chat app using Ollama to allow for local LLM integration with OAuth authentication.
+# C-Ollama Chat
+Simple C# Chat app with React frontend using Ollama to allow for local LLM integration with OAuth authentication.
 
 ## Features
 
@@ -8,24 +8,58 @@ Simple C# Chat app using Ollama to allow for local LLM integration with OAuth au
 - Auth0 integration support
 - Integration with Ollama for local LLM access
 - Role-based access control with admin privileges
+- Modern React frontend with Tailwind CSS
 - Development tools for testing
 
 ## Prerequisites
 
 - .NET 9.0 SDK or later
+- Node.js 18+ and npm
 - Ollama running locally or on a remote server
 - OAuth provider (for production)
 
 ## Getting Started
 
-1. Clone the repository
-2. Update the OAuth settings in `appsettings.json`
-3. Run the application:
+### Development
 
-```bash
+The easiest way to run the application in development mode is to use the provided script:
+
+```powershell
+# Run both frontend and backend in development mode
+.\dev.ps1
+```
+
+Alternatively, you can run the frontend and backend separately:
+
+```powershell
+# Run the frontend
+cd client
+npm install
+npm run dev
+
+# In another terminal, run the backend
 cd src
 dotnet run
 ```
+
+### Production Build
+
+To build the application for production:
+
+```powershell
+# Build everything for production
+.\build.ps1
+```
+
+This will:
+1. Build the React frontend and output to the wwwroot folder
+2. Build and publish the ASP.NET Core application
+3. Output the final build to the ./publish folder
+
+### Configuration
+
+1. Update the OAuth settings in `appsettings.json`
+2. Configure Ollama connection settings
 
 For development, you can use the built-in test token endpoint:
 

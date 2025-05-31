@@ -6,7 +6,7 @@ using ChatApp.Services;
 namespace ChatApp.Controllers
 {
     [ApiController]
-    [Route("chat")]
+    [Route("api/chat")]
     public class ChatController : ControllerBase
     {
         private readonly ILogger<ChatController> _logger;

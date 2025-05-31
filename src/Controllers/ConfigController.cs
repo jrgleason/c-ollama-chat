@@ -2,9 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.Controllers
-{
-    [ApiController]
-    [Route("config")]
+{    [ApiController]
+    [Route("api/config")]
     public class ConfigController : ControllerBase
     {
         private readonly ILogger<ConfigController> _logger;
@@ -34,13 +33,22 @@ namespace ChatApp.Controllers
         }
 
         [HttpPost("user")]
-        [Authorize]
-        public IActionResult UpdateUserConfig([FromBody] UserConfig config)
+        [Authorize]        public IActionResult UpdateUserConfig([FromBody] UserConfig config)
         {
             // In a real implementation, you would save these settings to a database
             _logger.LogInformation($"Updated config for user {User.Identity?.Name}");
             
             return Ok(new { Message = "Configuration updated successfully" });
+        }
+        
+        [HttpGet("models")]
+        public IActionResult GetAvailableModels()
+        {
+            // In a real implementation, you would retrieve this from Ollama API
+            // For now, return a fixed list of models
+            var models = new[] { "llama3", "mistral", "gemma", "codellama" };
+            
+            return Ok(models);
         }
     }
 
