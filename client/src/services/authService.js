@@ -6,25 +6,25 @@ export const authService = {
       const response = await fetch('/api/config/auth');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const config = await response.json();
+      }      const config = await response.json();
       return {
         domain: config.domain,
         clientId: config.clientId,
         authorizationParams: {
-          redirect_uri: config.redirectUri || window.location.origin,
-          audience: config.audience
+          redirect_uri: window.location.origin,
+          audience: config.audience,
+          scope: config.scope
         }
       };
     } catch (error) {
-      console.error('Failed to fetch Auth0 config:', error);
-      // Return default config for development
+      console.error('Failed to fetch Auth0 config:', error);      // Return default config for development
       return {
         domain: 'your-auth0-domain.auth0.com',
         clientId: 'your-auth0-client-id',
         authorizationParams: {
           redirect_uri: window.location.origin,
-          audience: 'https://your-api-identifier'
+          audience: 'https://your-api-identifier',
+          scope: 'openid profile email'
         }
       };
     }

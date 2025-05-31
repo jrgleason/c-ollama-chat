@@ -41,21 +41,63 @@ http://localhost:5013
 http://localhost:5013
 ```
 
-## Step 3: Update appsettings.json
+## Step 3: Configure Auth0 Credentials (Environment Variables)
 
-Copy your Auth0 application details to `src/appsettings.json`:
+**Important**: Never commit Auth0 credentials to version control. Use environment variables instead.
 
-```json
-{
-  "Auth0": {
-    "Domain": "your-tenant.auth0.com",
-    "ClientId": "your-client-id-from-auth0",
-    "ClientSecret": "your-client-secret-from-auth0",
-    "Audience": "https://your-api-identifier",
-    "RedirectUri": "http://localhost:5013",
-    "LogoutUri": "http://localhost:5013"
-  }
-}
+### Option A: Using System Environment Variables (Recommended)
+
+Set these environment variables in PowerShell:
+```powershell
+$env:AUTH0_DOMAIN="jackiergleason.auth0.com"
+$env:AUTH0_CLIENT_ID="your-client-id"  
+$env:AUTH0_CLIENT_SECRET="your-client-secret"
+$env:AUTH0_AUDIENCE="https://thejackiegleason.com"
+$env:AUTH0_SCOPE="openid profile email add:documents site:admin"
+```
+
+Or set them permanently in Windows:
+```powershell
+[Environment]::SetEnvironmentVariable("AUTH0_DOMAIN", "jackiergleason.auth0.com", "User")
+[Environment]::SetEnvironmentVariable("AUTH0_CLIENT_ID", "your-client-id", "User")
+[Environment]::SetEnvironmentVariable("AUTH0_CLIENT_SECRET", "your-client-secret", "User")
+[Environment]::SetEnvironmentVariable("AUTH0_AUDIENCE", "https://thejackiegleason.com", "User")
+[Environment]::SetEnvironmentVariable("AUTH0_SCOPE", "openid profile email add:documents site:admin", "User")
+```
+
+Then run the application:
+```powershell
+.\run-with-env.ps1
+```
+
+### Option B: Using .env file (Fallback)
+
+1. **Copy the template**:
+   ```bash
+   cp .env.template .env
+   ```
+
+2. **Edit .env file** with your Auth0 credentials:   ```env
+   AUTH0_DOMAIN=jackiergleason.auth0.com
+   AUTH0_CLIENT_ID=your-client-id
+   AUTH0_CLIENT_SECRET=your-client-secret
+   AUTH0_AUDIENCE=https://thejackiegleason.com
+   AUTH0_SCOPE=openid profile email add:documents site:admin
+   ```
+
+3. **Run with .env file as fallback**:
+   ```bash
+   .\run-with-env.ps1 -UseEnvFile
+   ```
+
+### Option C: Using .NET User Secrets (Alternative)
+
+```bash
+cd src
+dotnet user-secrets set "Auth0:Domain" "jackiergleason.auth0.com"
+dotnet user-secrets set "Auth0:ClientId" "your-client-id"
+dotnet user-secrets set "Auth0:ClientSecret" "your-client-secret"
+dotnet user-secrets set "Auth0:Audience" "https://your-api-identifier"
 ```
 
 ### Where to find these values:

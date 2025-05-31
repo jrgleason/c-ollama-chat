@@ -49,9 +49,7 @@ namespace ChatApp.Controllers
             var models = new[] { "llama3", "mistral", "gemma", "codellama" };
             
             return Ok(models);
-        }
-
-        [HttpGet("auth")]
+        }        [HttpGet("auth")]
         public IActionResult GetAuthConfig()
         {
             // Return Auth0 configuration for the client
@@ -60,8 +58,7 @@ namespace ChatApp.Controllers
                 Domain = _configuration["Auth0:Domain"] ?? "",
                 ClientId = _configuration["Auth0:ClientId"] ?? "",
                 Audience = _configuration["Auth0:Audience"] ?? "",
-                RedirectUri = _configuration["Auth0:RedirectUri"] ?? $"{Request.Scheme}://{Request.Host}",
-                LogoutUri = _configuration["Auth0:LogoutUri"] ?? $"{Request.Scheme}://{Request.Host}"
+                Scope = _configuration["Auth0:Scope"] ?? "openid profile email"
             };
 
             return Ok(authConfig);
