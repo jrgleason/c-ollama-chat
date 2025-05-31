@@ -3,21 +3,41 @@ export class ApiService {
   constructor(baseUrl = '') {
     this.baseUrl = baseUrl || window.location.origin;
     this.token = null;
+    this.getAccessTokenSilently = null; // Will be set by Auth0
   }
 
-  // Set the JWT token for authenticated requests
+  // Set the Auth0 token getter function
+  setAuth0TokenGetter(getAccessTokenSilently) {
+    this.getAccessTokenSilently = getAccessTokenSilently;
+  }
+
+  // Set the JWT token for authenticated requests (fallback)
   setAuthToken(token) {
     this.token = token;
   }
-
   // Get the default headers for API requests
-  getHeaders() {
+  async getHeaders() {
     const headers = {
       'Content-Type': 'application/json',
     };
     
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    try {
+      // Try to get Auth0 token first
+      if (this.getAccessTokenSilently) {
+        const token = await this.getAccessTokenSilently();
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+          return headers;
+        }
+      }
+      
+      // Fallback to stored token
+      if (this.token) {
+        headers['Authorization'] = `Bearer ${this.token}`;
+      }
+    } catch (error) {
+      console.warn('Failed to get access token:', error);
+      // Continue without token for public endpoints
     }
     
     return headers;
@@ -31,13 +51,12 @@ export class ApiService {
     }
     
     return response.json();
-  }
-  // Send a message to the chat API
+  }  // Send a message to the chat API
   async sendChatMessage(message, modelName = 'llama3') {
     try {
       const response = await fetch(`${this.baseUrl}/api/chat/message`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
         body: JSON.stringify({
           Text: message,
           Model: modelName
@@ -56,7 +75,7 @@ export class ApiService {
       console.log('Fetching models from:', url);
       
       const response = await fetch(url, {
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
         // Add cache control to avoid browser caching
         cache: 'no-cache'
       });

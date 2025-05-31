@@ -3,6 +3,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './style.css'
 import { ChatInterface } from './components/ChatInterface'
+import { Auth0ProviderWithConfig } from './components/Auth0ProviderWithConfig'
+import { AuthButton } from './components/AuthButton'
 
 function App() {
   return (
@@ -14,9 +16,7 @@ function App() {
             <a href="https://github.com/yourusername/c-ollama-chat" target="_blank" rel="noreferrer" className="text-sm bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600 transition-colors">
               GitHub
             </a>
-            <button className="text-sm bg-primary-600 px-3 py-1 rounded-md hover:bg-primary-500 transition-colors">
-              Login
-            </button>
+            <AuthButton />
           </div>
         </div>
       </header>
@@ -34,6 +34,8 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('app')).render(
   <React.StrictMode>
-    <App />
+    <Auth0ProviderWithConfig>
+      <App />
+    </Auth0ProviderWithConfig>
   </React.StrictMode>
 )

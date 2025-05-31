@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Expand environment variables in configuration
+EnvironmentVariableExpander.ExpandEnvironmentVariables(builder.Configuration);
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

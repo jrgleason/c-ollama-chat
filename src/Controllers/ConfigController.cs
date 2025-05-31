@@ -49,6 +49,19 @@ namespace ChatApp.Controllers
             var models = new[] { "llama3", "mistral", "gemma", "codellama" };
             
             return Ok(models);
+        }        [HttpGet("auth")]
+        public IActionResult GetAuthConfig()
+        {
+            // Return Auth0 configuration for the client
+            var authConfig = new
+            {
+                Domain = _configuration["Auth0:Domain"] ?? "",
+                ClientId = _configuration["Auth0:ClientId"] ?? "",
+                Audience = _configuration["Auth0:Audience"] ?? "",
+                Scope = _configuration["Auth0:Scope"] ?? "openid profile email"
+            };
+
+            return Ok(authConfig);
         }
     }
 

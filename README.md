@@ -1,33 +1,71 @@
 # C-Ollama Chat
-Simple C# Chat app with React frontend using Ollama to allow for local LLM integration with OAuth authentication.
 
-## Features
+A modern chat application with React frontend and .NET backend, featuring local LLM integration via Ollama and Auth0 authentication.
 
-- RESTful API built with ASP.NET Core
-- OAuth/JWT authentication and authorization
-- Auth0 integration support
-- Integration with Ollama for local LLM access
-- Role-based access control with admin privileges
-- Modern React frontend with Tailwind CSS
-- Development tools for testing
+## ✨ Features
 
-## Prerequisites
+- 🔐 **Auth0 Authentication** - Secure login with Auth0 integration
+- 🤖 **Local LLM Integration** - Chat with local models via Ollama
+- ⚛️ **Modern React Frontend** - Built with Vite and Tailwind CSS
+- 🔧 **ASP.NET Core Backend** - RESTful API with JWT authentication
+- 🎨 **Beautiful UI** - Dark theme with custom color palette
+- 🔒 **Environment Variables** - Secure credential management
+- 📱 **Responsive Design** - Works on desktop and mobile
 
-- .NET 9.0 SDK or later
+## 🚀 Quick Start
+
+### Prerequisites
+
+- .NET 9.0 SDK
 - Node.js 18+ and npm
-- Ollama running locally or on a remote server
-- OAuth provider (for production)
+- Ollama running locally
+- Auth0 account (free tier available)
 
-## Getting Started
+### Setup
 
-### Development
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd c-ollama-chat
+   ```
 
-The easiest way to run the application in development mode is to use the provided script:
+2. **Configure Auth0** (see [Auth0 Setup Guide](docs/AUTH0_SETUP.md))
+   ```powershell
+   $env:AUTH0_DOMAIN="your-domain.auth0.com"
+   $env:AUTH0_CLIENT_ID="your-client-id"
+   $env:AUTH0_CLIENT_SECRET="your-client-secret"
+   $env:AUTH0_AUDIENCE="https://thejackiegleason.com"
+   $env:AUTH0_SCOPE="openid profile email add:documents site:admin"
+   ```
 
-```powershell
-# Run both frontend and backend in development mode
-.\dev.ps1
-```
+3. **Run the application**
+   ```powershell
+   .\run-with-env.ps1
+   ```
+
+4. **Open your browser** → http://localhost:5013
+
+## 📚 Documentation
+
+- **[Auth0 Setup Guide](docs/AUTH0_SETUP.md)** - Complete Auth0 configuration
+- **[Environment Setup](docs/ENVIRONMENT_SETUP.md)** - Environment variables configuration  
+- **[Development Guide](docs/DEVELOPMENT.md)** - Development workflows and project structure
+
+## 🛠️ Technology Stack
+
+### Frontend
+- **React 18** with Vite
+- **Tailwind CSS** for styling
+- **Auth0 React SDK** for authentication
+
+### Backend  
+- **.NET 9** with ASP.NET Core
+- **JWT Bearer Authentication**
+- **Ollama Integration** for LLM access
+
+### External Services
+- **Auth0** for authentication
+- **Ollama** for local LLM inference
 
 Alternatively, you can run the frontend and backend separately:
 
