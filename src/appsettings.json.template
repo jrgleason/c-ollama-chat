@@ -10,11 +10,12 @@
     "Issuer": "https://yourauthserver.com/",
     "Audience": "your-api-identifier",
     "JwtSecret": "your-development-secret-key-at-least-32-chars"
-  },    "Auth0": {
-    "Domain": "your-auth0-domain.auth0.com",
-    "ClientId": "your-auth0-client-id",
-    "ClientSecret": "your-auth0-client-secret",
-    "Audience": "https://your-api-identifier",
+  },  
+  "Auth0": {
+    "Domain": "YOUR_AUTH0_DOMAIN.auth0.com",
+    "ClientId": "YOUR_AUTH0_CLIENT_ID",
+    "ClientSecret": "YOUR_AUTH0_CLIENT_SECRET",
+    "Audience": "https://YOUR_AUTH0_API_IDENTIFIER",
     "RedirectUri": "http://localhost:5013",
     "LogoutUri": "http://localhost:5013"
   },

@@ -50,6 +50,22 @@ namespace ChatApp.Controllers
             
             return Ok(models);
         }
+
+        [HttpGet("auth")]
+        public IActionResult GetAuthConfig()
+        {
+            // Return Auth0 configuration for the client
+            var authConfig = new
+            {
+                Domain = _configuration["Auth0:Domain"] ?? "",
+                ClientId = _configuration["Auth0:ClientId"] ?? "",
+                Audience = _configuration["Auth0:Audience"] ?? "",
+                RedirectUri = _configuration["Auth0:RedirectUri"] ?? $"{Request.Scheme}://{Request.Host}",
+                LogoutUri = _configuration["Auth0:LogoutUri"] ?? $"{Request.Scheme}://{Request.Host}"
+            };
+
+            return Ok(authConfig);
+        }
     }
 
     public class UserConfig
