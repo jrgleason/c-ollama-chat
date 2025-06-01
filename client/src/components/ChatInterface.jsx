@@ -165,10 +165,9 @@ export function ChatInterface() {
                           ? 'bg-danger text-white rounded-md'
                           : 'bg-surface text-primary rounded-bl-md border-l-4 border-brand'
                     }`}
-                  >
-                    {msg.role !== 'system' && (
+                  >                    {msg.role !== 'system' && (
                       <div className={`text-xs mb-2 font-medium ${
-                        msg.role === 'user' ? 'text-brand-light' : 'text-muted'
+                        msg.role === 'user' ? 'text-primary' : 'text-muted'
                       }`}>
                         {msg.role === 'user' ? 'You' : 'Assistant'}
                       </div>
