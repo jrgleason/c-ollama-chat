@@ -42,33 +42,66 @@ export class ApiService {
     
     return headers;
   }
-
   // Handle API responses and errors
   async handleResponse(response) {
+    console.log('🔍 handleResponse called with status:', response.status);
+    console.log('🔍 Response headers:', Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
+      console.error('❌ Response not OK, status:', response.status);
       const errorData = await response.json().catch(() => null);
+      console.error('❌ Error data:', errorData);
       throw new Error(errorData?.message || `API error: ${response.status}`);
     }
     
-    return response.json();
-  }  // Send a message to the chat API
-  async sendChatMessage(message, modelName = 'llama3') {
     try {
-      const response = await fetch(`${this.baseUrl}/api/chat/message`, {
+      const responseText = await response.text();
+      console.log('📄 Raw response text:', responseText);
+      
+      const parsedData = JSON.parse(responseText);
+      console.log('📝 Parsed JSON data:', parsedData);
+      console.log('📝 Parsed JSON keys:', Object.keys(parsedData));
+      
+      return parsedData;
+    } catch (parseError) {
+      console.error('❌ JSON parse error:', parseError);
+      console.error('❌ Response text was:', responseText);
+      throw new Error('Failed to parse JSON response');
+    }
+  }// Send a message to the chat API
+  async sendChatMessage(message, modelName = 'llama3') {
+    console.log('🚀 apiService.sendChatMessage called with:', { message, modelName });
+    
+    try {
+      const url = `${this.baseUrl}/api/chat/message`;
+      console.log('📡 Making request to:', url);
+      
+      const headers = await this.getHeaders();
+      console.log('📋 Request headers:', headers);
+      
+      const requestBody = {
+        Text: message,
+        Model: modelName
+      };
+      console.log('📦 Request body:', requestBody);
+      
+      const response = await fetch(url, {
         method: 'POST',
-        headers: await this.getHeaders(),
-        body: JSON.stringify({
-          Text: message,
-          Model: modelName
-        })
+        headers: headers,
+        body: JSON.stringify(requestBody)
       });
       
-      return await this.handleResponse(response);
+      console.log('📨 Raw response status:', response.status);
+      console.log('📨 Raw response headers:', Object.fromEntries(response.headers.entries()));
+      
+      const result = await this.handleResponse(response);
+      console.log('✅ apiService.sendChatMessage result:', result);
+      return result;
     } catch (error) {
-      console.error('Chat API error:', error);
+      console.error('❌ apiService.sendChatMessage error:', error);
       throw error;
     }
-  }  // Get available chat models
+  }// Get available chat models
   async getAvailableModels() {
     try {
       const url = `${this.baseUrl}/api/config/models`;

@@ -1,6 +1,4 @@
 using ChatApp.Services;
-using ChatApp.Auth0;
-using ChatApp.Config;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,28 +50,40 @@ Console.WriteLine("=== END AUTH0 DEBUG ===");
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddControllers();
 
-// Add authentication options
-// Option 1: Use the original security configuration
-builder.Services.AddSecurityServices(builder.Configuration);
+// Configure JSON serialization to use camelCase
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+});
 
-// Option 2: Use Auth0 authentication (commented out by default)
-/*
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
+
+// Add Auth0 JWT Bearer authentication for API
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
 })
-.AddCookie()
-.AddAuth0WebAppAuthentication(options =>
+.AddJwtBearer(options =>
 {
-    options.Domain = builder.Configuration["Auth0:Domain"] ?? "";
-    options.ClientId = builder.Configuration["Auth0:ClientId"] ?? "";
-    options.ClientSecret = builder.Configuration["Auth0:ClientSecret"] ?? "";
+    options.Authority = $"https://{builder.Configuration["Auth0:Domain"]}";
+    options.Audience = builder.Configuration["Auth0:Audience"];
+    options.RequireHttpsMetadata = false; // For development
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
 });
-*/
+
+builder.Services.AddAuthorization();
 
 // Register HttpClient for Ollama API
 builder.Services.AddHttpClient<IOllamaService, OllamaService>();
@@ -93,7 +103,8 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 // Use authentication and authorization middleware
-app.UseSecurityConfig();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Map controllers BEFORE static files (important!)
 // This ensures API routes are handled by controllers instead of static files

@@ -18,12 +18,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
   </ItemGroup>
-
   <!-- Build React client app -->
+  <!--
   <Target Name="BuildReactApp" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
     <Message Importance="high" Text="Building React client app..." />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm ci" />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
   </Target>
+  -->
 
 </Project>

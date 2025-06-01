@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ChatApp.Services;
 
 namespace ChatApp.Controllers
 {    [ApiController]
@@ -8,11 +9,13 @@ namespace ChatApp.Controllers
     {
         private readonly ILogger<ConfigController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IOllamaService _ollamaService;
 
-        public ConfigController(ILogger<ConfigController> logger, IConfiguration configuration)
+        public ConfigController(ILogger<ConfigController> logger, IConfiguration configuration, IOllamaService ollamaService)
         {
             _logger = logger;
             _configuration = configuration;
+            _ollamaService = ollamaService;
         }
 
         [HttpGet("user")]
@@ -30,10 +33,9 @@ namespace ChatApp.Controllers
                 Theme = "light", // Example user preference
                 HistoryEnabled = true
             });
-        }
-
-        [HttpPost("user")]
-        [Authorize]        public IActionResult UpdateUserConfig([FromBody] UserConfig config)
+        }        [HttpPost("user")]
+        [Authorize]
+        public IActionResult UpdateUserConfig([FromBody] UserConfig config)
         {
             // In a real implementation, you would save these settings to a database
             _logger.LogInformation($"Updated config for user {User.Identity?.Name}");
@@ -42,14 +44,21 @@ namespace ChatApp.Controllers
         }
         
         [HttpGet("models")]
-        public IActionResult GetAvailableModels()
+        public async Task<IActionResult> GetAvailableModels()
         {
-            // In a real implementation, you would retrieve this from Ollama API
-            // For now, return a fixed list of models
-            var models = new[] { "llama3", "mistral", "gemma", "codellama" };
-            
-            return Ok(models);
-        }        [HttpGet("auth")]
+            try
+            {
+                var models = await _ollamaService.GetAvailableModelsAsync();
+                return Ok(models);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching models from Ollama");
+                // Return fallback models
+                var fallbackModels = new[] { "llama2", "llama3", "mistral", "gemma", "codellama" };
+                return Ok(fallbackModels);
+            }
+        }[HttpGet("auth")]
         public IActionResult GetAuthConfig()
         {
             // Return Auth0 configuration for the client

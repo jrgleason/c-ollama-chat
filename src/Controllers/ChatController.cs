@@ -28,9 +28,7 @@ namespace ChatApp.Controllers
         public IActionResult Get()
         {
             return Ok(new { Message = "Welcome to the chat service" });
-        }
-
-        [HttpPost("message")]
+        }        [HttpPost("message")]
         [Authorize] // Requires any authenticated user
         public async Task<IActionResult> SendMessage([FromBody] ChatMessage message, CancellationToken cancellationToken)
         {
@@ -40,7 +38,8 @@ namespace ChatApp.Controllers
             try
             {
                 var defaultModel = _configuration["Ollama:DefaultModel"] ?? "llama2";
-                var response = await _ollamaService.GenerateResponseAsync(message.Text, defaultModel, cancellationToken);
+                var modelToUse = !string.IsNullOrEmpty(message.Model) ? message.Model : defaultModel;
+                var response = await _ollamaService.GenerateResponseAsync(message.Text, modelToUse, cancellationToken);
                 
                 return Ok(new { 
                     Response = response.Response, 

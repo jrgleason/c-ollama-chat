@@ -9,10 +9,24 @@ export function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState('llama3');
+  const [debugInfo, setDebugInfo] = useState('Debug info will appear here...');
+  const [showDebug, setShowDebug] = useState(true);
   
   const messagesEndRef = useRef(null);
-  const { isAuthenticated, isLoading: auth0Loading } = useAuth0();
+  const { isAuthenticated, isLoading: auth0Loading, getAccessTokenSilently, user } = useAuth0();
   useApiAuth(); // Configure apiService with Auth0
+  // Helper function to log both to console and in-app debug
+  const debugLog = (message, data = null) => {
+    console.log(message, data);
+    const timestamp = new Date().toLocaleTimeString();
+    setDebugInfo(prev => `[${timestamp}] ${message}${data ? ': ' + JSON.stringify(data, null, 2) : ''}\n${prev}`);
+  };
+
+  // Initialize debug on mount
+  useEffect(() => {
+    debugLog('🚀 ChatInterface component mounted');
+    debugLog('🔍 Initial auth state', { isAuthenticated, auth0Loading });
+  }, []);
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -21,49 +35,93 @@ export function ChatInterface() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
-  // Load available models on component mount
+  }, [messages]);  // Load available models on component mount
   useEffect(() => {
+    debugLog('🔄 useEffect for models triggered', { auth0Loading, isAuthenticated });
+    
     const fetchModels = async () => {
       try {
+        debugLog('📡 Fetching models...');
         // Get available models (public endpoint)
         const modelData = await apiService.getAvailableModels();
+        debugLog('📦 Model data received', modelData);
+        
         if (Array.isArray(modelData)) {
           setModels(modelData);
           if (modelData.length > 0) {
             setSelectedModel(modelData[0]);
+            debugLog('✅ Models loaded successfully', { count: modelData.length, first: modelData[0] });
           }
         }
       } catch (error) {
+        debugLog('❌ Failed to load models', error.message);
         console.error('Failed to load models:', error);
       }
     };
 
     // Only fetch models after Auth0 has finished loading
     if (!auth0Loading) {
+      debugLog('🚀 Auth0 loading complete, fetching models...');
       fetchModels();
     }
-  }, [auth0Loading]);
-
-  const handleSendMessage = async (e) => {
+  }, [auth0Loading]);  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim() || isLoading) return;
+    
+    debugLog('🎯 handleSendMessage triggered');
+    debugLog('💬 Input message', inputMessage);
+    debugLog('🤖 Selected model', selectedModel);
+    debugLog('🔐 Is authenticated', isAuthenticated);
+    debugLog('👤 User info', user);
+    
+    // Test if we can get access token
+    try {
+      const token = await getAccessTokenSilently();
+      debugLog('🎫 Got access token', { length: token?.length, preview: token?.substring(0, 20) + '...' });
+    } catch (tokenError) {
+      debugLog('❌ Failed to get access token', tokenError.message);
+    }
     
     const userMessage = inputMessage;
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setInputMessage('');
     setIsLoading(true);
-
-    try {
+      try {
+      debugLog('📞 Calling apiService.sendChatMessage...');
       const response = await apiService.sendChatMessage(userMessage, selectedModel);
-      setMessages(prev => [...prev, { role: 'assistant', content: response.message }]);
+      debugLog('🎉 Chat response received', response);
+      debugLog('🔑 Response keys', Object.keys(response || {}));
+      debugLog('🔍 Response type', typeof response);
+      debugLog('🔍 Response is array', Array.isArray(response));
+      debugLog('🔍 Response stringified', JSON.stringify(response, null, 2));
+      
+      // Handle both potential property names (camelCase from backend)
+      const responseText = response?.response || response?.Response || response?.text || response?.content || 'No response content';
+      debugLog('📝 Using response text', responseText);
+      debugLog('📝 Response text type', typeof responseText);
+      
+      if (!responseText || responseText === 'No response content') {
+        debugLog('⚠️ Empty or missing response text');
+        debugLog('🔍 Full response object detailed', {
+          response,
+          responseKeys: Object.keys(response || {}),
+          responseValues: Object.values(response || {}),
+          stringified: JSON.stringify(response, null, 2)
+        });
+      }
+      
+      setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
+      debugLog('✅ Message added to state', { responseText: responseText.substring(0, 100) + '...' });
     } catch (error) {
+      debugLog('💥 Error in handleSendMessage', error.message);
+      console.error('💥 Error in handleSendMessage:', error);
       setMessages(prev => [...prev, { 
         role: 'system', 
         content: `Error: ${error.message || 'Failed to get response'}`
       }]);
     } finally {
       setIsLoading(false);
+      debugLog('🏁 handleSendMessage completed');
     }
   };
   return (
@@ -155,8 +213,42 @@ export function ChatInterface() {
                 Send
               </button>
             </div>
-          </form>
-        </>
+          </form>        </>
+      )}
+      
+      {/* Debug Panel */}
+      {showDebug && (
+        <div className="fixed bottom-4 right-4 w-96 max-h-64 bg-gray-800 border border-gray-600 rounded-lg p-3 overflow-hidden">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-sm font-bold text-yellow-400">🐛 Debug Log</h3>
+            <button 
+              onClick={() => setShowDebug(false)}
+              className="text-gray-400 hover:text-white text-xs"
+            >
+              ✕
+            </button>
+          </div>
+          <pre className="text-xs text-gray-300 overflow-y-auto max-h-48 whitespace-pre-wrap">
+            {debugInfo}
+          </pre>
+          <button 
+            onClick={() => setDebugInfo('Debug cleared...')}
+            className="mt-2 text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+      
+      {/* Debug Toggle Button */}
+      {!showDebug && (
+        <button 
+          onClick={() => setShowDebug(true)}
+          className="fixed bottom-4 right-4 bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded-full text-sm"
+          title="Show Debug"
+        >
+          🐛
+        </button>
       )}
     </div>
   );
