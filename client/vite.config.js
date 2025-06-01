@@ -23,5 +23,14 @@ export default defineConfig({
         changeOrigin: true
       }
     }
-  }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js', // if you have a setup file
+    coverage: {
+      provider: 'v8', // or 'istanbul'
+      reporter: ['text', 'json', 'html'],
+    },
+  },
 })

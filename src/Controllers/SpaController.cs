@@ -6,11 +6,12 @@ namespace ChatApp.Controllers;
 public class SpaController : ControllerBase
 {
     private readonly IWebHostEnvironment _environment;
-    
+
     public SpaController(IWebHostEnvironment environment)
     {
         _environment = environment;
-    }    [HttpGet]
+    }
+    [HttpGet]
     [Route("/")]
     [Route("/{*catchAll:regex(^(?!api|assets).*)}")] // Exclude /api and /assets paths
     public IActionResult Index()

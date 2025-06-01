@@ -1,5 +1,4 @@
 using ChatApp.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,21 +26,21 @@ var auth0Vars = new[] { "AUTH0_DOMAIN", "AUTH0_CLIENT_ID", "AUTH0_AUDIENCE", "AU
 foreach (var varName in auth0Vars)
 {
     var envValue = Environment.GetEnvironmentVariable(varName);
-    
+
     // Use the same key mapping as our manual configuration
     var configKey = varName switch
     {
         "AUTH0_DOMAIN" => "Auth0:Domain",
-        "AUTH0_CLIENT_ID" => "Auth0:ClientId", 
+        "AUTH0_CLIENT_ID" => "Auth0:ClientId",
         "AUTH0_AUDIENCE" => "Auth0:Audience",
         "AUTH0_SCOPE" => "Auth0:Scope",
         _ => $"Auth0:{varName.Replace("AUTH0_", "")}"
     };
-    
+
     var configValue = builder.Configuration[configKey];
-    var displayEnv = string.IsNullOrEmpty(envValue) ? "(not set)" : 
+    var displayEnv = string.IsNullOrEmpty(envValue) ? "(not set)" :
                      envValue.Length > 8 ? envValue.Substring(0, 8) + "..." : envValue;
-    var displayConfig = string.IsNullOrEmpty(configValue) ? "(not set)" : 
+    var displayConfig = string.IsNullOrEmpty(configValue) ? "(not set)" :
                         configValue.Length > 8 ? configValue.Substring(0, 8) + "..." : configValue;
     Console.WriteLine($"{varName}: ENV={displayEnv}, CONFIG={displayConfig}");
 }
@@ -121,7 +120,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

@@ -1,7 +1,6 @@
+using ChatApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ChatApp.Models;
-using ChatApp.Services;
 
 namespace ChatApp.Controllers
 {
@@ -14,7 +13,7 @@ namespace ChatApp.Controllers
         private readonly IConfiguration _configuration;
 
         public ChatController(
-            ILogger<ChatController> logger, 
+            ILogger<ChatController> logger,
             IOllamaService ollamaService,
             IConfiguration configuration)
         {
@@ -28,23 +27,25 @@ namespace ChatApp.Controllers
         public IActionResult Get()
         {
             return Ok(new { Message = "Welcome to the chat service" });
-        }        [HttpPost("message")]
+        }
+        [HttpPost("message")]
         [Authorize] // Requires any authenticated user
         public async Task<IActionResult> SendMessage([FromBody] ChatMessage message, CancellationToken cancellationToken)
         {
             var userName = User.Identity?.Name ?? "anonymous";
             _logger.LogInformation($"Message from {userName}: {message.Text}");
-            
+
             try
             {
                 var defaultModel = _configuration["Ollama:DefaultModel"] ?? "llama2";
                 var modelToUse = !string.IsNullOrEmpty(message.Model) ? message.Model : defaultModel;
                 var response = await _ollamaService.GenerateResponseAsync(message.Text, modelToUse, cancellationToken);
-                
-                return Ok(new { 
-                    Response = response.Response, 
-                    Model = response.Model, 
-                    ProcessingTimeMs = response.ProcessingTime 
+
+                return Ok(new
+                {
+                    Response = response.Response,
+                    Model = response.Model,
+                    ProcessingTimeMs = response.ProcessingTime
                 });
             }
             catch (Exception ex)

@@ -9,9 +9,11 @@
     <UserSecretsId>cd41fe9c-a917-41a4-b50e-b693636acfc4</UserSecretsId>
   </PropertyGroup>
   <!-- Include wwwroot files in the publish output -->
+  <!-- 
   <ItemGroup>
     <Content Update="wwwroot\**" CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
+  </ItemGroup> 
+  -->
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />

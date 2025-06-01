@@ -1,9 +1,10 @@
+using ChatApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ChatApp.Services;
 
 namespace ChatApp.Controllers
-{    [ApiController]
+{
+    [ApiController]
     [Route("api/config")]
     public class ConfigController : ControllerBase
     {
@@ -25,7 +26,7 @@ namespace ChatApp.Controllers
             // In a real implementation, you would retrieve user-specific settings
             // from a database based on the authenticated user
             var userId = User.Identity?.Name;
-            
+
             return Ok(new
             {
                 UserId = userId,
@@ -33,16 +34,17 @@ namespace ChatApp.Controllers
                 Theme = "light", // Example user preference
                 HistoryEnabled = true
             });
-        }        [HttpPost("user")]
+        }
+        [HttpPost("user")]
         [Authorize]
         public IActionResult UpdateUserConfig([FromBody] UserConfig config)
         {
             // In a real implementation, you would save these settings to a database
             _logger.LogInformation($"Updated config for user {User.Identity?.Name}");
-            
+
             return Ok(new { Message = "Configuration updated successfully" });
         }
-        
+
         [HttpGet("models")]
         public async Task<IActionResult> GetAvailableModels()
         {
@@ -58,7 +60,8 @@ namespace ChatApp.Controllers
                 var fallbackModels = new[] { "llama2", "llama3", "mistral", "gemma", "codellama" };
                 return Ok(fallbackModels);
             }
-        }[HttpGet("auth")]
+        }
+        [HttpGet("auth")]
         public IActionResult GetAuthConfig()
         {
             // Return Auth0 configuration for the client
