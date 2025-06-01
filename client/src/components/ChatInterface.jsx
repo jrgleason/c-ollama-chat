@@ -10,11 +10,20 @@ export function ChatInterface() {
   const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState('llama3');
   const [debugInfo, setDebugInfo] = useState('Debug info will appear here...');
-  const [showDebug, setShowDebug] = useState(true);
+  const [showDebug, setShowDebug] = useState(false);
   
   const messagesEndRef = useRef(null);
+  const modelSelectorRef = useRef(null);
   const { isAuthenticated, isLoading: auth0Loading, getAccessTokenSilently, user } = useAuth0();
   useApiAuth(); // Configure apiService with Auth0
+  
+  // Update tooltip when selected model changes
+  useEffect(() => {
+    if (modelSelectorRef.current) {
+      modelSelectorRef.current.setAttribute('data-tooltip', selectedModel);
+    }
+  }, [selectedModel]);
+  
   // Helper function to log both to console and in-app debug
   const debugLog = (message, data = null) => {
     console.log(message, data);
@@ -193,21 +202,22 @@ export function ChatInterface() {
               </div>
             )}
             <div ref={messagesEndRef} />
-          </div>          <form onSubmit={handleSendMessage} className="p-4 border-t border-surface bg-surface-bg">
-            <div className="flex gap-3">
-              <select
-                className="bg-surface text-primary rounded-lg px-3 py-2 border border-surface focus:border-brand focus:outline-none min-w-32"
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                disabled={isLoading}
-              >
-                {models.length > 0 ? 
-                  models.map(model => (
-                    <option key={model} value={model} className="bg-surface">{model}</option>
-                  )) : 
-                  <option value="llama3" className="bg-surface">llama3</option>
-                }
-              </select>
+          </div>          <form onSubmit={handleSendMessage} className="p-4 border-t border-surface bg-surface-bg">            <div className="flex gap-3">
+              <div className="model-selector relative" style={{ width: "140px" }} ref={modelSelectorRef}>
+                <select
+                  className="bg-surface text-primary rounded-lg px-3 py-2 border border-surface focus:border-brand focus:outline-none w-full"
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  disabled={isLoading}
+                >
+                  {models.length > 0 ? 
+                    models.map(model => (
+                      <option key={model} value={model} className="bg-surface">{model}</option>
+                    )) : 
+                    <option value="llama3" className="bg-surface">llama3</option>
+                  }
+                </select>
+              </div>
               
               <input
                 type="text"

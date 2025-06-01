@@ -79,3 +79,41 @@ body {
 .hover\:bg-surface-light:hover { background-color: var(--surface-light); }
 .hover\:bg-warning-hover:hover { background-color: var(--warning-hover); }
 .hover\:bg-danger-hover:hover { background-color: var(--danger-hover); }
+
+/* Component-specific styles */
+select option {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Model selector styles */
+.model-selector {
+  position: relative;
+}
+
+.model-selector select {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.model-selector:hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--surface-dark);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 50;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  margin-bottom: 5px;
+  border: 1px solid var(--surface);
+}
