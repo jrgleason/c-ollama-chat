@@ -1,7 +1,4 @@
 using ChatApp.Services;
-using ChatApp.Auth0;
-using ChatApp.Config;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,21 +26,21 @@ var auth0Vars = new[] { "AUTH0_DOMAIN", "AUTH0_CLIENT_ID", "AUTH0_AUDIENCE", "AU
 foreach (var varName in auth0Vars)
 {
     var envValue = Environment.GetEnvironmentVariable(varName);
-    
+
     // Use the same key mapping as our manual configuration
     var configKey = varName switch
     {
         "AUTH0_DOMAIN" => "Auth0:Domain",
-        "AUTH0_CLIENT_ID" => "Auth0:ClientId", 
+        "AUTH0_CLIENT_ID" => "Auth0:ClientId",
         "AUTH0_AUDIENCE" => "Auth0:Audience",
         "AUTH0_SCOPE" => "Auth0:Scope",
         _ => $"Auth0:{varName.Replace("AUTH0_", "")}"
     };
-    
+
     var configValue = builder.Configuration[configKey];
-    var displayEnv = string.IsNullOrEmpty(envValue) ? "(not set)" : 
+    var displayEnv = string.IsNullOrEmpty(envValue) ? "(not set)" :
                      envValue.Length > 8 ? envValue.Substring(0, 8) + "..." : envValue;
-    var displayConfig = string.IsNullOrEmpty(configValue) ? "(not set)" : 
+    var displayConfig = string.IsNullOrEmpty(configValue) ? "(not set)" :
                         configValue.Length > 8 ? configValue.Substring(0, 8) + "..." : configValue;
     Console.WriteLine($"{varName}: ENV={displayEnv}, CONFIG={displayConfig}");
 }
@@ -52,28 +49,40 @@ Console.WriteLine("=== END AUTH0 DEBUG ===");
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddControllers();
 
-// Add authentication options
-// Option 1: Use the original security configuration
-builder.Services.AddSecurityServices(builder.Configuration);
+// Configure JSON serialization to use camelCase
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+});
 
-// Option 2: Use Auth0 authentication (commented out by default)
-/*
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
+
+// Add Auth0 JWT Bearer authentication for API
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
 })
-.AddCookie()
-.AddAuth0WebAppAuthentication(options =>
+.AddJwtBearer(options =>
 {
-    options.Domain = builder.Configuration["Auth0:Domain"] ?? "";
-    options.ClientId = builder.Configuration["Auth0:ClientId"] ?? "";
-    options.ClientSecret = builder.Configuration["Auth0:ClientSecret"] ?? "";
+    options.Authority = $"https://{builder.Configuration["Auth0:Domain"]}";
+    options.Audience = builder.Configuration["Auth0:Audience"];
+    options.RequireHttpsMetadata = false; // For development
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
 });
-*/
+
+builder.Services.AddAuthorization();
 
 // Register HttpClient for Ollama API
 builder.Services.AddHttpClient<IOllamaService, OllamaService>();
@@ -93,7 +102,8 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 // Use authentication and authorization middleware
-app.UseSecurityConfig();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Map controllers BEFORE static files (important!)
 // This ensures API routes are handled by controllers instead of static files
@@ -110,7 +120,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

@@ -1,68 +1,70 @@
-import React, { useEffect, useState } from 'react';
-import { Auth0Provider } from '@auth0/auth0-react';
-import { authService } from '../services/authService';
+import React, {useEffect, useState} from 'react';
+import {Auth0Provider} from '@auth0/auth0-react';
+import {authService} from '../services/authService';
 
-export function Auth0ProviderWithConfig({ children }) {
-  const [auth0Config, setAuth0Config] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export function Auth0ProviderWithConfig({children}) {
+    const [auth0Config, setAuth0Config] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const loadAuth0Config = async () => {
-      try {
-        const config = await authService.getAuth0Config();
-        setAuth0Config(config);
-      } catch (err) {
-        console.error('Failed to load Auth0 config:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    useEffect(() => {
+        const loadAuth0Config = async () => {
+            try {
+                const config = await authService.getAuth0Config();
+                setAuth0Config(config);
+            } catch (err) {
+                console.error('Failed to load Auth0 config:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    loadAuth0Config();
-  }, []);
+        loadAuth0Config();
+    }, []);
+    if (loading) {
+        return (
+            <div
+                className="min-h-screen bg-gradient-to-b from-[var(--surface-dark)] to-[var(--surface-bg)] text-white flex items-center justify-center">
+                <div className="text-center">
+                    <div
+                        className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--brand-light)] mx-auto"></div>
+                    <p className="mt-4 text-[var(--text-secondary)]">Loading authentication...</p>
+                </div>
+            </div>
+        );
+    }
 
-  if (loading) {
+    if (error || !auth0Config) {
+        return (
+            <div
+                className="min-h-screen bg-gradient-to-b from-[var(--surface-dark)] to-[var(--surface-bg)] text-white flex items-center justify-center">
+                <div className="text-center max-w-md">
+                    <div className="text-red-400 text-6xl mb-4">⚠️</div>
+                    <h2 className="text-xl font-bold mb-2">Authentication Configuration Error</h2>
+                    <p className="text-[var(--text-secondary)] mb-4">
+                        Failed to load authentication configuration. Please check your Auth0 settings.
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="bg-[var(--brand)] px-4 py-2 rounded-md hover:bg-[var(--brand-hover)] transition-colors"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400 mx-auto"></div>
-          <p className="mt-4 text-gray-300">Loading authentication...</p>
-        </div>
-      </div>
+        <Auth0Provider
+            domain={auth0Config.domain}
+            clientId={auth0Config.clientId}
+            authorizationParams={auth0Config.authorizationParams}
+            useRefreshTokens={true}
+            cacheLocation="localstorage"
+        >
+            {children}
+        </Auth0Provider>
     );
-  }
-
-  if (error || !auth0Config) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="text-red-400 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold mb-2">Authentication Configuration Error</h2>
-          <p className="text-gray-300 mb-4">
-            Failed to load authentication configuration. Please check your Auth0 settings.
-          </p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-primary-600 px-4 py-2 rounded-md hover:bg-primary-500 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <Auth0Provider
-      domain={auth0Config.domain}
-      clientId={auth0Config.clientId}
-      authorizationParams={auth0Config.authorizationParams}
-      useRefreshTokens={true}
-      cacheLocation="localstorage"
-    >
-      {children}
-    </Auth0Provider>
-  );
 }
