@@ -21,14 +21,12 @@ export function Auth0ProviderWithConfig({ children }) {
     };
 
     loadAuth0Config();
-  }, []);
-
-  if (loading) {
+  }, []);  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-[--surface-dark] to-[--surface-bg] text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400 mx-auto"></div>
-          <p className="mt-4 text-gray-300">Loading authentication...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[--brand-light] mx-auto"></div>
+          <p className="mt-4 text-[--text-secondary]">Loading authentication...</p>
         </div>
       </div>
     );
@@ -36,16 +34,16 @@ export function Auth0ProviderWithConfig({ children }) {
 
   if (error || !auth0Config) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-[--surface-dark] to-[--surface-bg] text-white flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="text-red-400 text-6xl mb-4">⚠️</div>
           <h2 className="text-xl font-bold mb-2">Authentication Configuration Error</h2>
-          <p className="text-gray-300 mb-4">
+          <p className="text-[--text-secondary] mb-4">
             Failed to load authentication configuration. Please check your Auth0 settings.
           </p>
           <button 
             onClick={() => window.location.reload()} 
-            className="bg-primary-600 px-4 py-2 rounded-md hover:bg-primary-500 transition-colors"
+            className="bg-[--brand] px-4 py-2 rounded-md hover:bg-[--brand-hover] transition-colors"
           >
             Retry
           </button>

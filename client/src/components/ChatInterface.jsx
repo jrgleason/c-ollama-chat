@@ -123,107 +123,96 @@ export function ChatInterface() {
       setIsLoading(false);
       debugLog('🏁 handleSendMessage completed');
     }
-  };
-  return (
-    <div className="flex flex-col h-full">
-      {auth0Loading ? (
-        <div className="flex-1 flex items-center justify-center">
+  };  return (
+    <div className="flex flex-col h-full">      {auth0Loading ? (        <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400 mx-auto"></div>
-            <p className="mt-4 text-gray-300">Loading authentication...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto"></div>
+            <p className="mt-4 text-muted">Loading authentication...</p>
           </div>
         </div>
       ) : !isAuthenticated ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md">
-            <div className="text-primary-400 text-6xl mb-4">🔒</div>
-            <h2 className="text-xl font-bold mb-2">Authentication Required</h2>
-            <p className="text-gray-300 mb-4">
+            <div className="text-brand text-6xl mb-4">🔒</div>
+            <h2 className="text-xl font-bold text-primary mb-2">Authentication Required</h2>
+            <p className="text-muted mb-4">
               Please log in to start chatting with your local LLM.
             </p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-lighter">
               Your conversations are private and secure.
             </p>
           </div>
         </div>
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+      ) : (<>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">            {messages.length === 0 ? (
+              <div className="text-center py-8 text-muted">
                 <p className="text-xl mb-2">Welcome to C-Ollama Chat</p>
                 <p>Start a conversation with your local LLM powered by Ollama</p>
-              </div>            ) : (
+              </div>
+            ) : (
               messages.map((msg, index) => (
                 <div 
                   key={index} 
-                  className={`flex ${
-                    msg.role === 'user' 
-                      ? 'justify-end' 
-                      : msg.role === 'system'
-                        ? 'justify-center'
-                        : 'justify-start'
-                  } mb-4`}
-                >
-                  <div 
-                    className={`max-w-[75%] p-4 rounded-2xl shadow-lg ${
+                  className={`flex mb-4 ${
+                    msg.role === 'user' ? 'justify-end' : 
+                    msg.role === 'system' ? 'justify-center' : 'justify-start'
+                  }`}
+                >                  <div 
+                    className={`max-w-3xl p-4 rounded-2xl shadow-lg ${
                       msg.role === 'user' 
-                        ? 'bg-blue-600 text-white rounded-br-md' 
+                        ? 'bg-brand text-white rounded-br-md' 
                         : msg.role === 'system'
-                          ? 'bg-yellow-600 text-white rounded-lg'
-                          : 'bg-gray-700 text-gray-100 rounded-bl-md border-l-4 border-gray-500'
+                          ? 'bg-danger text-white rounded-md'
+                          : 'bg-surface text-primary rounded-bl-md border-l-4 border-brand'
                     }`}
                   >
                     {msg.role !== 'system' && (
-                      <div className={`text-xs mb-1 opacity-75 ${
-                        msg.role === 'user' ? 'text-blue-100' : 'text-gray-400'
+                      <div className={`text-xs mb-2 font-medium ${
+                        msg.role === 'user' ? 'text-brand-light' : 'text-muted'
                       }`}>
                         {msg.role === 'user' ? 'You' : 'Assistant'}
                       </div>
                     )}
-                    <div className="whitespace-pre-wrap break-words">
+                    <div className="whitespace-pre-wrap break-words leading-relaxed">
                       {msg.content}
                     </div>
                   </div>
                 </div>
               ))
             )}            {isLoading && (
-              <div className="flex justify-start mb-4">
-                <div className="bg-gray-700 p-4 rounded-2xl rounded-bl-md shadow-lg border-l-4 border-gray-500 max-w-[75%]">
-                  <div className="text-xs mb-1 opacity-75 text-gray-400">
+              <div className="flex justify-start mb-4">                <div className="bg-surface p-4 rounded-2xl rounded-bl-md shadow-lg border-l-4 border-brand max-w-3xl">
+                  <div className="text-xs mb-2 font-medium text-muted">
                     Assistant
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                    <span className="text-gray-400 text-sm ml-2">Thinking...</span>
+                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    <span className="text-muted text-sm ml-2">Thinking...</span>
                   </div>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
-          </div>
-          
-          <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-700">
-            <div className="flex space-x-2">
+          </div>          <form onSubmit={handleSendMessage} className="p-4 border-t border-surface bg-surface-bg">
+            <div className="flex gap-3">
               <select
-                className="bg-gray-700 text-white rounded-lg px-3 py-2"
+                className="bg-surface text-primary rounded-lg px-3 py-2 border border-surface focus:border-brand focus:outline-none min-w-32"
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
                 disabled={isLoading}
               >
                 {models.length > 0 ? 
                   models.map(model => (
-                    <option key={model} value={model}>{model}</option>
+                    <option key={model} value={model} className="bg-surface">{model}</option>
                   )) : 
-                  <option value="llama3">llama3</option>
+                  <option value="llama3" className="bg-surface">llama3</option>
                 }
               </select>
               
               <input
                 type="text"
-                className="flex-1 bg-gray-700 rounded-lg px-4 py-2 text-white"
+                className="flex-1 bg-surface text-primary rounded-lg px-4 py-2 border border-surface placeholder-muted focus:border-brand focus:outline-none"
                 placeholder="Type a message..."
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
@@ -232,36 +221,34 @@ export function ChatInterface() {
               
               <button
                 type="submit"
-                className="bg-primary-500 hover:bg-primary-600 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                className="bg-brand hover:bg-brand-hover disabled:bg-surface rounded-lg px-6 py-2 text-primary font-medium transition-colors"
                 disabled={!inputMessage.trim() || isLoading}
               >
                 Send
               </button>
             </div>
-          </form>        </>
-      )}
-      
-      {/* Debug Panel */}
+          </form></>
+      )}      {/* Debug Panel */}
       {showDebug && (
-        <div className="fixed bottom-4 right-4 w-96 max-h-64 bg-gray-800 border border-gray-600 rounded-lg p-3 overflow-hidden">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-bold text-yellow-400">🐛 Debug Log</h3>
+        <div className="fixed bottom-4 right-4 w-96 max-h-64 bg-surface-dark border border-surface rounded-lg shadow-2xl z-50">          <div className="flex justify-between items-center p-3 border-b border-surface">
+            <h3 className="text-sm font-bold text-warning">🐛 Debug Log</h3>
             <button 
               onClick={() => setShowDebug(false)}
-              className="text-gray-400 hover:text-white text-xs"
+              className="text-muted hover:text-primary text-lg leading-none"
             >
               ✕
             </button>
           </div>
-          <pre className="text-xs text-gray-300 overflow-y-auto max-h-48 whitespace-pre-wrap">
-            {debugInfo}
-          </pre>
-          <button 
-            onClick={() => setDebugInfo('Debug cleared...')}
-            className="mt-2 text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-          >
-            Clear
-          </button>
+          <div className="p-3">            <pre className="text-xs text-secondary overflow-y-auto max-h-40 whitespace-pre-wrap">
+              {debugInfo}
+            </pre>
+            <button 
+              onClick={() => setDebugInfo('Debug cleared...')}
+              className="mt-3 text-xs bg-surface hover:bg-surface-light px-3 py-1 rounded text-secondary transition-colors"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       )}
       
@@ -269,7 +256,7 @@ export function ChatInterface() {
       {!showDebug && (
         <button 
           onClick={() => setShowDebug(true)}
-          className="fixed bottom-4 right-4 bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded-full text-sm"
+          className="fixed bottom-4 right-4 bg-warning hover:bg-warning-hover text-primary p-3 rounded-full text-lg z-50 shadow-lg transition-colors"
           title="Show Debug"
         >
           🐛
