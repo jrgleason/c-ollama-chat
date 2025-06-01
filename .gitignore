@@ -67,3 +67,12 @@ secrets.json
 
 # Visual Studio temporary files
 .vs/
+
+# Node.js / npm / yarn
+client/node_modules/
+npm-debug.log*
+yarn-error.log
+yarn-debug.log
+
+# Client-side test coverage
+client/coverage/
