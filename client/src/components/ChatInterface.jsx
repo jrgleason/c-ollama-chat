@@ -153,28 +153,53 @@ export function ChatInterface() {
               <div className="text-center py-8 text-gray-400">
                 <p className="text-xl mb-2">Welcome to C-Ollama Chat</p>
                 <p>Start a conversation with your local LLM powered by Ollama</p>
-              </div>
-            ) : (
+              </div>            ) : (
               messages.map((msg, index) => (
                 <div 
                   key={index} 
-                  className={`p-3 rounded-lg max-w-[85%] ${
+                  className={`flex ${
                     msg.role === 'user' 
-                      ? 'bg-primary-600 ml-auto text-white' 
+                      ? 'justify-end' 
                       : msg.role === 'system'
-                        ? 'bg-accent-500 text-white mx-auto'
-                        : 'bg-secondary-500 mr-auto text-white'
-                  }`}
+                        ? 'justify-center'
+                        : 'justify-start'
+                  } mb-4`}
                 >
-                  {msg.content}
+                  <div 
+                    className={`max-w-[75%] p-4 rounded-2xl shadow-lg ${
+                      msg.role === 'user' 
+                        ? 'bg-blue-600 text-white rounded-br-md' 
+                        : msg.role === 'system'
+                          ? 'bg-yellow-600 text-white rounded-lg'
+                          : 'bg-gray-700 text-gray-100 rounded-bl-md border-l-4 border-gray-500'
+                    }`}
+                  >
+                    {msg.role !== 'system' && (
+                      <div className={`text-xs mb-1 opacity-75 ${
+                        msg.role === 'user' ? 'text-blue-100' : 'text-gray-400'
+                      }`}>
+                        {msg.role === 'user' ? 'You' : 'Assistant'}
+                      </div>
+                    )}
+                    <div className="whitespace-pre-wrap break-words">
+                      {msg.content}
+                    </div>
+                  </div>
                 </div>
               ))
-            )}
-            {isLoading && (
-              <div className="bg-gray-700 p-3 rounded-lg mr-auto flex items-center space-x-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+            )}            {isLoading && (
+              <div className="flex justify-start mb-4">
+                <div className="bg-gray-700 p-4 rounded-2xl rounded-bl-md shadow-lg border-l-4 border-gray-500 max-w-[75%]">
+                  <div className="text-xs mb-1 opacity-75 text-gray-400">
+                    Assistant
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    <span className="text-gray-400 text-sm ml-2">Thinking...</span>
+                  </div>
+                </div>
               </div>
             )}
             <div ref={messagesEndRef} />
