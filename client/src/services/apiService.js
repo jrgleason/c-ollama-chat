@@ -48,6 +48,7 @@ export class ApiService {
     async handleResponse(response) {
         console.log('🔍 handleResponse called with status:', response.status);
         console.log('🔍 Response headers:', Object.fromEntries(response.headers.entries()));
+        let responseText = ''; // Declare responseText in the outer scope
 
         if (!response.ok) {
             console.error('❌ Response not OK, status:', response.status);
@@ -57,7 +58,7 @@ export class ApiService {
         }
 
         try {
-            const responseText = await response.text();
+            responseText = await response.text(); // Assign value here
             console.log('📄 Raw response text:', responseText);
 
             const parsedData = JSON.parse(responseText);
@@ -67,7 +68,7 @@ export class ApiService {
             return parsedData;
         } catch (parseError) {
             console.error('❌ JSON parse error:', parseError);
-            console.error('❌ Response text was:', responseText);
+            console.error('❌ Response text was:', responseText); // Now accessible
             throw new Error('Failed to parse JSON response');
         }
     }// Send a message to the chat API
