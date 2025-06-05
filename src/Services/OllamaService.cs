@@ -1,10 +1,11 @@
 using ChatApp.Models;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Runtime.CompilerServices;
 
 namespace ChatApp.Services
-{    public interface IOllamaService
+{
+    public interface IOllamaService
     {
         Task<ChatResponse> GenerateResponseAsync(string message, string model = "llama2", CancellationToken cancellationToken = default);
         IAsyncEnumerable<ChatStreamResponse> GenerateStreamResponseAsync(string message, string model = "llama2", CancellationToken cancellationToken = default);
@@ -25,7 +26,8 @@ namespace ChatApp.Services
 
             // Configure HttpClient with the Ollama API base URL
             _httpClient.BaseAddress = new Uri(_configuration["Ollama:BaseUrl"] ?? "http://localhost:11434");
-        }        public async Task<ChatResponse> GenerateResponseAsync(string message, string model = "llama2", CancellationToken cancellationToken = default)
+        }
+        public async Task<ChatResponse> GenerateResponseAsync(string message, string model = "llama2", CancellationToken cancellationToken = default)
         {
             try
             {
@@ -69,7 +71,8 @@ namespace ChatApp.Services
                     ProcessingTime = 0
                 };
             }
-        }        public async IAsyncEnumerable<ChatStreamResponse> GenerateStreamResponseAsync(string message, string model = "llama2", [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        }
+        public async IAsyncEnumerable<ChatStreamResponse> GenerateStreamResponseAsync(string message, string model = "llama2", [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var request = new ChatRequest
             {
@@ -127,7 +130,7 @@ namespace ChatApp.Services
                 if (streamResponse != null)
                 {
                     yield return streamResponse;
-                    
+
                     if (streamResponse.Done)
                         break;
                 }

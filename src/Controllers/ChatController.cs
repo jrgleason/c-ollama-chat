@@ -27,7 +27,8 @@ namespace ChatApp.Controllers
         public IActionResult Get()
         {
             return Ok(new { Message = "Welcome to the chat service" });
-        }        [HttpPost("message")]
+        }
+        [HttpPost("message")]
         [Authorize] // Requires any authenticated user
         public async Task<IActionResult> SendMessage([FromBody] ChatMessage message, CancellationToken cancellationToken)
         {
@@ -52,7 +53,8 @@ namespace ChatApp.Controllers
                 _logger.LogError(ex, "Error processing chat message");
                 return StatusCode(500, new { Error = "An error occurred while processing your request." });
             }
-        }        [HttpPost("stream")]
+        }
+        [HttpPost("stream")]
         [Authorize] // Requires any authenticated user
         public async Task StreamMessage([FromBody] ChatMessage message, CancellationToken cancellationToken)
         {
