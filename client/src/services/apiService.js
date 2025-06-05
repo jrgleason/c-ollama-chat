@@ -71,7 +71,7 @@ export class ApiService {
             console.error('❌ Response text was:', responseText); // Now accessible
             throw new Error('Failed to parse JSON response');
         }
-    }// Send a message to the chat API
+    }    // Send a message to the chat API
     async sendChatMessage(message, modelName = 'llama3') {
         console.log('🚀 apiService.sendChatMessage called with:', {message, modelName});
 
@@ -104,7 +104,106 @@ export class ApiService {
             console.error('❌ apiService.sendChatMessage error:', error);
             throw error;
         }
-    }// Get available chat models
+    }    // Send a streaming message to the chat API
+    sendStreamingChatMessage(message, modelName = 'llama3') {
+        console.log('🚀 apiService.sendStreamingChatMessage called with:', {message, modelName});
+
+        const self = this;
+        
+        return (async function* () {
+            let response;
+            let reader;
+            
+            try {
+                const url = `${self.baseUrl}/api/chat/stream`;
+                console.log('📡 Making streaming request to:', url);
+
+                const headers = await self.getHeaders();
+                console.log('📋 Request headers:', headers);
+
+                const requestBody = {
+                    Text: message,
+                    Model: modelName
+                };
+                console.log('📦 Request body:', requestBody);
+
+                response = await fetch(url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log('📨 Raw streaming response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ HTTP error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+                }
+
+                if (!response.body) {
+                    throw new Error('Response body is null');
+                }
+
+                reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) {
+                        console.log('📨 Streaming completed');
+                        break;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    
+                    // Keep the last incomplete line in buffer
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const jsonData = line.slice(6).trim(); // Remove 'data: ' prefix
+                                if (jsonData) {
+                                    const data = JSON.parse(jsonData);
+                                    console.log('📦 Streaming data received:', data);
+                                    yield data;
+                                    
+                                    if (data.Done || data.Error) {
+                                        console.log('✅ Streaming done flag received');
+                                        return;
+                                    }
+                                }
+                            } catch (parseError) {
+                                console.warn('⚠️ Failed to parse streaming data:', line, parseError);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('❌ apiService.sendStreamingChatMessage error:', error);
+                // Yield an error response instead of throwing
+                yield {
+                    Response: `Error: ${error.message}`,
+                    Model: modelName,
+                    Done: true,
+                    Error: true
+                };
+            } finally {
+                if (reader) {
+                    try {
+                        reader.releaseLock();
+                    } catch (e) {
+                        console.warn('⚠️ Failed to release reader lock:', e);
+                    }
+                }
+            }
+        })();    }
+
+    // Get available chat models
     async getAvailableModels() {
         try {
             const url = `${this.baseUrl}/api/config/models`;

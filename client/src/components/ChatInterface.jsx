@@ -7,10 +7,13 @@ export function ChatInterface() {
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isStreaming, setIsStreaming] = useState(true); // Default to streaming
     const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState('llama3');
     const [debugInfo, setDebugInfo] = useState('Debug info will appear here...');
     const [showDebug, setShowDebug] = useState(false);
+    const [streamingMessageId, setStreamingMessageId] = useState(null);
+    const [useStreaming, setUseStreaming] = useState(true); // New state for streaming toggle
 
     const messagesEndRef = useRef(null);
     const modelSelectorRef = useRef(null);
@@ -28,23 +31,22 @@ export function ChatInterface() {
     const debugLog = (message, data = null) => {
         console.log(message, data);
         const timestamp = new Date().toLocaleTimeString();
-        setDebugInfo(prev => `[${timestamp}] ${message}${data ? ': ' + JSON.stringify(data, null, 2) : ''}\n${prev}`);
-    };
+        setDebugInfo(prev => `[${timestamp}] ${message}${data ? ': ' + JSON.stringify(data, null, 2) : ''}\n${prev}`);    };
 
     // Initialize debug on mount
     useEffect(() => {
         debugLog('🚀 ChatInterface component mounted');
         debugLog('🔍 Initial auth state', {isAuthenticated, auth0Loading});
-    }, []);
+    }, [isAuthenticated, auth0Loading]);
 
     // Scroll to bottom of messages
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
-    };
-
-    useEffect(() => {
+    };    useEffect(() => {
         scrollToBottom();
-    }, [messages]);  // Load available models on component mount
+    }, [messages]);
+    
+    // Load available models on component mount
     useEffect(() => {
         debugLog('🔄 useEffect for models triggered', {auth0Loading, isAuthenticated});
 
@@ -64,16 +66,16 @@ export function ChatInterface() {
                 }
             } catch (error) {
                 debugLog('❌ Failed to load models', error.message);
-                console.error('Failed to load models:', error);
-            }
+                console.error('Failed to load models:', error);            }
         };
-
+        
         // Only fetch models after Auth0 has finished loading
         if (!auth0Loading) {
             debugLog('🚀 Auth0 loading complete, fetching models...');
             fetchModels();
         }
-    }, [auth0Loading]);
+    }, [auth0Loading, isAuthenticated]);
+    
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!inputMessage.trim() || isLoading) return;
@@ -81,6 +83,7 @@ export function ChatInterface() {
         debugLog('🎯 handleSendMessage triggered');
         debugLog('💬 Input message', inputMessage);
         debugLog('🤖 Selected model', selectedModel);
+        debugLog('🔄 Use streaming', useStreaming);
         debugLog('🔐 Is authenticated', isAuthenticated);
         debugLog('👤 User info', user);
 
@@ -95,43 +98,71 @@ export function ChatInterface() {
         const userMessage = inputMessage;
         setMessages(prev => [...prev, {role: 'user', content: userMessage}]);
         setInputMessage('');
-        setIsLoading(true);
-        try {
-            debugLog('📞 Calling apiService.sendChatMessage...');
-            const response = await apiService.sendChatMessage(userMessage, selectedModel);
-            debugLog('🎉 Chat response received', response);
-            debugLog('🔑 Response keys', Object.keys(response || {}));
-            debugLog('🔍 Response type', typeof response);
-            debugLog('🔍 Response is array', Array.isArray(response));
-            debugLog('🔍 Response stringified', JSON.stringify(response, null, 2));
-
-            // Handle both potential property names (camelCase from backend)
-            const responseText = response?.response || response?.Response || response?.text || response?.content || 'No response content';
-            debugLog('📝 Using response text', responseText);
-            debugLog('📝 Response text type', typeof responseText);
-
-            if (!responseText || responseText === 'No response content') {
-                debugLog('⚠️ Empty or missing response text');
-                debugLog('🔍 Full response object detailed', {
-                    response,
-                    responseKeys: Object.keys(response || {}),
-                    responseValues: Object.values(response || {}),
-                    stringified: JSON.stringify(response, null, 2)
-                });
+        setIsLoading(true);        if (useStreaming) {
+            // Streaming mode
+            const assistantMessageIndex = Date.now();
+            setMessages(prev => [...prev, {role: 'assistant', content: '', id: assistantMessageIndex, isStreaming: true}]);
+            setIsLoading(false); // Turn off loading immediately since we're showing streaming message
+            
+            try {
+                debugLog('📞 Calling apiService.sendStreamingChatMessage...');
+                
+                const streamGenerator = apiService.sendStreamingChatMessage(userMessage, selectedModel);
+                
+                for await (const chunk of streamGenerator) {
+                    debugLog('📦 Received chunk', chunk);
+                    
+                    if (chunk.Response) {
+                        setMessages(prev => prev.map(msg => 
+                            msg.id === assistantMessageIndex 
+                                ? {...msg, content: msg.content + chunk.Response}
+                                : msg
+                        ));
+                    }
+                    
+                    if (chunk.Done || chunk.Error) {
+                        debugLog('✅ Streaming completed', {done: chunk.Done, error: chunk.Error});
+                        // Mark streaming as complete
+                        setMessages(prev => prev.map(msg => 
+                            msg.id === assistantMessageIndex 
+                                ? {...msg, isStreaming: false}
+                                : msg
+                        ));
+                        break;
+                    }
+                }
+            } catch (error) {
+                debugLog('💥 Error in streaming handleSendMessage', error.message);
+                console.error('💥 Error in streaming handleSendMessage:', error);
+                setMessages(prev => prev.map(msg => 
+                    msg.id === assistantMessageIndex 
+                        ? {...msg, content: `Error: ${error.message || 'Failed to get response'}`, isStreaming: false}
+                        : msg
+                ));
             }
+        } else {
+            // Non-streaming mode (original)
+            try {
+                debugLog('📞 Calling apiService.sendChatMessage...');
+                const response = await apiService.sendChatMessage(userMessage, selectedModel);
+                debugLog('🎉 Chat response received', response);
 
-            setMessages(prev => [...prev, {role: 'assistant', content: responseText}]);
-            debugLog('✅ Message added to state', {responseText: responseText.substring(0, 100) + '...'});
-        } catch (error) {
-            debugLog('💥 Error in handleSendMessage', error.message);
-            console.error('💥 Error in handleSendMessage:', error);
-            setMessages(prev => [...prev, {
-                role: 'system',
-                content: `Error: ${error.message || 'Failed to get response'}`
-            }]);
-        } finally {
-            setIsLoading(false);
-            debugLog('🏁 handleSendMessage completed');
+                const responseText = response?.response || response?.Response || response?.text || response?.content || 'No response content';
+                debugLog('📝 Using response text', responseText);
+
+                setMessages(prev => [...prev, {role: 'assistant', content: responseText}]);
+                debugLog('✅ Message added to state', {responseText: responseText.substring(0, 100) + '...'});
+            } catch (error) {
+                debugLog('💥 Error in non-streaming handleSendMessage', error.message);
+                console.error('💥 Error in non-streaming handleSendMessage:', error);
+                setMessages(prev => [...prev, {
+                    role: 'system',
+                    content: `Error: ${error.message || 'Failed to get response'}`
+                }]);
+            } finally {
+                setIsLoading(false);
+                debugLog('🏁 handleSendMessage completed');
+            }
         }
     };
     return (
@@ -177,21 +208,25 @@ export function ChatInterface() {
                                         : msg.role === 'system'
                                             ? 'bg-danger text-white rounded-md'
                                             : 'bg-surface text-primary rounded-bl-md border-l-4 border-brand'
-                                }`}
-                            >                    {msg.role !== 'system' && (
+                                }`}                            >                    {msg.role !== 'system' && (
                                 <div className={`text-xs mb-2 font-medium ${
                                     msg.role === 'user' ? 'text-primary' : 'text-muted'
                                 }`}>
                                     {msg.role === 'user' ? 'You' : 'Assistant'}
+                                    {msg.isStreaming && (
+                                        <span className="ml-2 text-brand">
+                                            <span className="animate-pulse">●</span> Streaming...
+                                        </span>
+                                    )}
                                 </div>
                             )}
                                 <div className="whitespace-pre-wrap break-words leading-relaxed">
-                                    {msg.content}
+                                    {msg.content || (msg.isStreaming ? 'Thinking...' : '')}
                                 </div>
                             </div>
                         </div>
                     ))
-                )} {isLoading && (
+                )}                {isLoading && (
                     <div className="flex justify-start mb-4">
                         <div
                             className="bg-surface p-4 rounded-2xl rounded-bl-md shadow-lg border-l-4 border-brand max-w-3xl">
@@ -204,14 +239,15 @@ export function ChatInterface() {
                                      style={{animationDelay: '0.2s'}}></div>
                                 <div className="w-2 h-2 bg-brand rounded-full animate-pulse"
                                      style={{animationDelay: '0.4s'}}></div>
-                                <span className="text-muted text-sm ml-2">Thinking...</span>
+                                <span className="text-muted text-sm ml-2">
+                                    {useStreaming ? 'Streaming...' : 'Thinking...'}
+                                </span>
                             </div>
                         </div>
                     </div>
                 )}
                     <div ref={messagesEndRef}/>
-                </div>
-                <form onSubmit={handleSendMessage} className="p-4 border-t border-surface bg-surface-bg">
+                </div>                <form onSubmit={handleSendMessage} className="p-4 border-t border-surface bg-surface-bg">
                     <div className="flex gap-3">
                         <div className="model-selector relative" style={{width: "140px"}} ref={modelSelectorRef}>
                             <select
@@ -228,6 +264,20 @@ export function ChatInterface() {
                                 }
                             </select>
                         </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setUseStreaming(!useStreaming)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                useStreaming 
+                                    ? 'bg-brand text-white' 
+                                    : 'bg-surface text-muted border border-surface'
+                            }`}
+                            disabled={isLoading}
+                            title={useStreaming ? 'Streaming enabled' : 'Streaming disabled'}
+                        >
+                            {useStreaming ? '🔄' : '📄'}
+                        </button>
 
                         <input
                             type="text"

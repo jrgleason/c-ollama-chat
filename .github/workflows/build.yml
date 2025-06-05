@@ -1,4 +1,4 @@
-name: Build Application
+name: Build and Test Application
 
 on:
   push:
@@ -12,21 +12,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x' # Using a recent LTS version
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x' # Using a recent LTS version
 
-    - name: Set up .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x' # Matches your project's TargetFramework
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x' # Matches your project's TargetFramework
 
-    - name: Restore .NET dependencies
-      run: dotnet restore c-ollama-chat.sln
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: ./client
 
-    - name: Build .NET Solution (includes React build)
-      run: dotnet build c-ollama-chat.sln --configuration Release --no-restore
+      - name: Lint frontend code
+        run: npm run lint
+        working-directory: ./client
+
+      - name: Run frontend tests
+        run: npm test
+        working-directory: ./client
+
+      - name: Generate frontend test coverage
+        run: npm run coverage
+        working-directory: ./client
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: ./client
+
+      - name: Restore .NET dependencies
+        run: dotnet restore c-ollama-chat.sln
+
+      - name: Build .NET Solution
+        run: dotnet build c-ollama-chat.sln --configuration Release --no-restore
+
+      - name: Run .NET tests
+        run: dotnet test c-ollama-chat.sln --configuration Release --no-build --verbosity normal

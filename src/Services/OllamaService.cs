@@ -1,4 +1,5 @@
 using ChatApp.Models;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
@@ -7,6 +8,7 @@ namespace ChatApp.Services
     public interface IOllamaService
     {
         Task<ChatResponse> GenerateResponseAsync(string message, string model = "llama2", CancellationToken cancellationToken = default);
+        IAsyncEnumerable<ChatStreamResponse> GenerateStreamResponseAsync(string message, string model = "llama2", CancellationToken cancellationToken = default);
         Task<string[]> GetAvailableModelsAsync(CancellationToken cancellationToken = default);
     }
 
@@ -25,7 +27,6 @@ namespace ChatApp.Services
             // Configure HttpClient with the Ollama API base URL
             _httpClient.BaseAddress = new Uri(_configuration["Ollama:BaseUrl"] ?? "http://localhost:11434");
         }
-
         public async Task<ChatResponse> GenerateResponseAsync(string message, string model = "llama2", CancellationToken cancellationToken = default)
         {
             try
@@ -69,6 +70,70 @@ namespace ChatApp.Services
                     Response = "Sorry, there was an error processing your message.",
                     ProcessingTime = 0
                 };
+            }
+        }
+        public async IAsyncEnumerable<ChatStreamResponse> GenerateStreamResponseAsync(string message, string model = "llama2", [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var request = new ChatRequest
+            {
+                Message = message,
+                Model = model,
+                Stream = true
+            };
+
+            var jsonContent = JsonSerializer.Serialize(request);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage? response = null;
+            try
+            {
+                response = await _httpClient.PostAsync("/api/generate", content, cancellationToken);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Ollama streaming API");
+                response = null;
+            }
+
+            if (response == null)
+            {
+                yield return new ChatStreamResponse
+                {
+                    Model = model,
+                    Response = "Sorry, there was an error processing your message.",
+                    Done = true
+                };
+                yield break;
+            }
+
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new StreamReader(stream);
+
+            string? line;
+            while ((line = await reader.ReadLineAsync()) != null && !cancellationToken.IsCancellationRequested)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                ChatStreamResponse? streamResponse = null;
+                try
+                {
+                    streamResponse = JsonSerializer.Deserialize<ChatStreamResponse>(line);
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Failed to deserialize streaming response: {Line}", line);
+                    continue;
+                }
+
+                if (streamResponse != null)
+                {
+                    yield return streamResponse;
+
+                    if (streamResponse.Done)
+                        break;
+                }
             }
         }
         public async Task<string[]> GetAvailableModelsAsync(CancellationToken cancellationToken = default)

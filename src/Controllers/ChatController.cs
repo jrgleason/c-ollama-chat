@@ -54,6 +54,55 @@ namespace ChatApp.Controllers
                 return StatusCode(500, new { Error = "An error occurred while processing your request." });
             }
         }
+        [HttpPost("stream")]
+        [Authorize] // Requires any authenticated user
+        public async Task StreamMessage([FromBody] ChatMessage message, CancellationToken cancellationToken)
+        {
+            var userName = User.Identity?.Name ?? "anonymous";
+            _logger.LogInformation($"Streaming message from {userName}: {message.Text}");
+
+            Response.Headers["Content-Type"] = "text/plain; charset=utf-8";
+            Response.Headers["Cache-Control"] = "no-cache";
+            Response.Headers["Connection"] = "keep-alive";
+
+            try
+            {
+                var defaultModel = _configuration["Ollama:DefaultModel"] ?? "llama2";
+                var modelToUse = !string.IsNullOrEmpty(message.Model) ? message.Model : defaultModel;
+
+                await foreach (var streamResponse in _ollamaService.GenerateStreamResponseAsync(message.Text, modelToUse, cancellationToken))
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        break;
+
+                    var jsonResponse = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        Response = streamResponse.Response,
+                        Model = streamResponse.Model,
+                        Done = streamResponse.Done
+                    });
+
+                    await Response.WriteAsync($"data: {jsonResponse}\n\n", cancellationToken);
+                    await Response.Body.FlushAsync(cancellationToken);
+
+                    if (streamResponse.Done)
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing streaming chat message");
+                var errorResponse = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    Response = "An error occurred while processing your request.",
+                    Model = message.Model ?? "unknown",
+                    Done = true,
+                    Error = true
+                });
+                await Response.WriteAsync($"data: {errorResponse}\n\n", cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+            }
+        }
 
         [HttpGet("models")]
         [Authorize] // Requires any authenticated user

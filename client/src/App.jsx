@@ -1,12 +1,8 @@
-// filepath: c:\Users\jacki\Code\c-ollama-chat\client\src\main.jsx
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import './style.css'
 import {ChatInterface} from './components/ChatInterface'
 import {Auth0ProviderWithConfig} from './components/Auth0ProviderWithConfig'
 import {AuthButton} from './components/AuthButton'
 
-function App() {
+export function App() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-surface-dark to-surface-bg text-white p-8">
             <header className="max-w-4xl mx-auto mb-6">
@@ -32,11 +28,3 @@ function App() {
         </div>
     );
 }
-
-ReactDOM.createRoot(document.getElementById('app')).render(
-    <React.StrictMode>
-        <Auth0ProviderWithConfig>
-            <App/>
-        </Auth0ProviderWithConfig>
-    </React.StrictMode>
-)

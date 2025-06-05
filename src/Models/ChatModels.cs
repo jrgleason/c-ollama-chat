@@ -28,10 +28,26 @@ namespace ChatApp.Models
         public bool Done { get; set; }
 
         [JsonPropertyName("total_duration")]
-        public long TotalDuration { get; set; }
-
-        // Custom property for processing time (not from Ollama)
+        public long TotalDuration { get; set; }        // Custom property for processing time (not from Ollama)
         public long ProcessingTime { get; set; }
+    }
+
+    public class ChatStreamResponse
+    {
+        [JsonPropertyName("model")]
+        public string Model { get; set; } = string.Empty;
+
+        [JsonPropertyName("response")]
+        public string Response { get; set; } = string.Empty;
+
+        [JsonPropertyName("done")]
+        public bool Done { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public DateTime CreatedAt { get; set; }
+
+        [JsonPropertyName("total_duration")]
+        public long TotalDuration { get; set; }
     }
 
     public class OllamaModelsResponse
