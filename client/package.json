@@ -7,17 +7,28 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "build:watch": "vite build --watch",
     "test": "vitest",
+    "lint": "eslint .",
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
+    "@eslint/js": "latest",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest",
     "@vitejs/plugin-react": "latest",
-    "@vitest/coverage-v8": "^3.1.4",
-    "jsdom": "^26.1.0",
+    "@vitest/coverage-v8": "latest",
+    "eslint": "latest",
+    "eslint-plugin-jsx-a11y": "latest",
+    "eslint-plugin-react": "latest",
+    "eslint-plugin-react-hooks": "latest",
+    "eslint-plugin-react-refresh": "latest",
+    "globals": "latest",
+    "jsdom": "latest",
     "vite": "latest",
-    "vitest": "^3.1.4"
+    "vitest": "latest"
   },
   "dependencies": {
     "@auth0/auth0-react": "latest",

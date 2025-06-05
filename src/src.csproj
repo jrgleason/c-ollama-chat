@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -7,6 +6,8 @@
     <SpaRoot>..\client\</SpaRoot>
     <Version>1.0.0</Version>
     <UserSecretsId>cd41fe9c-a917-41a4-b50e-b693636acfc4</UserSecretsId>
+    <GenerateStaticWebAssetsManifest>false</GenerateStaticWebAssetsManifest>
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
   <!-- Include wwwroot files in the publish output -->
   <!-- 
